@@ -100,7 +100,7 @@ def audit(actor,action,entity,entity_id='',details=''):
     insert('audit_logs',{'actor':actor,'action':action,'entity':entity,'entity_id':str(entity_id),'details':details,'created_at':now()})
 def init_db():
     if not SUPABASE_URL or not SUPABASE_KEY:return
-    defaults={'brand':'HR Connect Pakistan','community':'','contact':'','otMultiplier':1.5,'eobiEmployee':0,'eobiEmployer':0,'pessiRate':0,'verification':'Not configured','tagline':'Practical HR Tools, Resources & Career Solutions','announcement':'','announcementActive':False}
+    defaults={'brand':'HR Connect Pakistan','community':'','contact':'','otMultiplier':2.0,'eobiEmployee':0,'eobiEmployer':0,'pessiRate':0,'verification':'Not configured','tagline':'Practical HR Tools, Resources & Career Solutions','announcement':'','announcementActive':False}
     existing={r['key'] for r in select('settings',order='key.asc')}
     for k,v in defaults.items():
         if k not in existing:insert('settings',{'key':k,'value':json.dumps(v),'updated_at':now()})
@@ -141,7 +141,8 @@ def settings_dict():
 @app.get('/api/public/state')
 def public_state():
     courses=select('courses',{'published':'eq.1'},'sort_order.asc,id.desc');resources=select('resources',{'published':'eq.1'});jobs=select('jobs',{'published':'eq.1'});services=select('services',{'published':'eq.1'})
-    return {'settings':settings_dict(),'courses':[{'id':r['id'],'title':r['title'],'desc':r.get('description',''),'price':r.get('price',''),'status':r.get('status','')} for r in courses],'resources':[{'id':r['id'],'title':r['title'],'desc':r.get('description',''),'type':r.get('type',''),'free':bool(r.get('free')),'upload_id':r.get('upload_id')} for r in resources],'jobs':jobs,'services':services}
+    sources=select('sources',{'active':'eq.1'},'id.asc')
+    return {'settings':settings_dict(),'courses':[{'id':r['id'],'title':r['title'],'desc':r.get('description',''),'price':r.get('price',''),'status':r.get('status','')} for r in courses],'resources':[{'id':r['id'],'title':r['title'],'desc':r.get('description',''),'type':r.get('type',''),'free':bool(r.get('free')),'upload_id':r.get('upload_id')} for r in resources],'jobs':jobs,'services':services,'sources':sources}
 @app.get('/api/public/uploads')
 def public_uploads():return select('uploads',{'public':'eq.1'},columns='id,title,kind,price,filename,mime,size,created_at')
 class LeadIn(BaseModel):type:str;name:str;contact:str;message:str=''
